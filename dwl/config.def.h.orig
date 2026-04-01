@@ -70,7 +70,11 @@ static const struct xkb_rule_names xkb_rules = {
 	/* example:
 	.options = "ctrl:nocaps",
 	*/
-	.options = NULL,
+	.rules = NULL,
+    	.model = NULL,
+    	.layout = "us,gr",
+    	.variant = NULL,
+	.options = "grp:win_space_toggle,caps:backspace",
 };
 
 static const int repeat_rate = 25;
@@ -134,7 +138,7 @@ static const enum libinput_config_tap_button_map button_map = LIBINPUT_CONFIG_TA
 #define SHCMD(cmd) { .v = (const char*[]){ "/bin/sh", "-c", cmd, NULL } }
 
 /* commands */
-static const char *termcmd[] = { "alacritty", NULL };
+static const char *termcmd[] = { "foot", NULL };
 static const char *menucmd[] = { "wmenu-run","-f","JetBrainsMono nerd Font 16", "-l", "10" , NULL };
 
 static const Key keys[] = {
@@ -152,6 +156,12 @@ static const Key keys[] = {
 	{ MODKEY,                    XKB_KEY_d,           incnmaster,       {.i = -1} },
 	{ MODKEY,                    XKB_KEY_h,           setmfact,         {.f = -0.05f} },
 	{ MODKEY,                    XKB_KEY_l,           setmfact,         {.f = +0.05f} },
+
+	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_H, setcfact, {.f = +0.25f} },
+	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_L, setcfact, {.f = -0.25f} },
+	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_K, setcfact, {.f = 0.0f} },
+
+	{ MODKEY, XKB_KEY_w, spawn, SHCMD("~/.local/bin/wallpaper-picker") },
 	{ MODKEY,                    XKB_KEY_Return,      zoom,             {0} },
 	{ MODKEY,                    XKB_KEY_Tab,         view,             {0} },
 	{ MODKEY,                    XKB_KEY_c,           killclient,       {0} },

@@ -374,6 +374,8 @@ static int statusin(int fd, unsigned int mask, void *data);
 static void tag(const Arg *arg);
 static void tagmon(const Arg *arg);
 static void tile(Monitor *m);
+
+static void dwindle(Monitor *m);
 static void togglebar(const Arg *arg);
 static void togglefloating(const Arg *arg);
 static void togglefullscreen(const Arg *arg);
@@ -390,6 +392,7 @@ static void urgent(struct wl_listener *listener, void *data);
 static void view(const Arg *arg);
 static void virtualkeyboard(struct wl_listener *listener, void *data);
 static void virtualpointer(struct wl_listener *listener, void *data);
+static void warpcursor(const Client *c);
 static Monitor *xytomon(double x, double y);
 static void xytonode(double x, double y, struct wlr_surface **psurface,
 		Client **pc, LayerSurface **pl, double *nx, double *ny);
@@ -599,6 +602,7 @@ arrange(Monitor *m)
 		m->lt[m->sellt]->arrange(m);
 	motionnotify(0, NULL, 0, 0, 0, 0);
 	checkidleinhibitor(NULL);
+	warpcursor(focustop(selmon));
 }
 
 void
@@ -1675,6 +1679,10 @@ focusclient(Client *c, int lift)
 
 	if (locked)
 		return;
+
+	/* Warp cursor to center of client if it is outside */
+	if (lift)
+		warpcursor(c);
 
 	/* Raise client in stacking order if requested */
 	if (c && lift)
@@ -3075,6 +3083,58 @@ togglebar(const Arg *arg)
 }
 
 void
+dwindle(Monitor *m)
+{
+	unsigned int i, n = 0;
+	int nx, ny, nw, nh;
+	int horizontal;
+	Client *c;
+
+	/* count clients */
+	wl_list_for_each(c, &clients, link)
+		if (VISIBLEON(c, m) && !c->isfloating && !c->isfullscreen)
+			n++;
+
+	if (n == 0)
+		return;
+
+	nx = m->w.x;
+	ny = m->w.y;
+	nw = m->w.width;
+	nh = m->w.height;
+
+	horizontal = 1; // toggle split direction
+	i = 0;
+
+	wl_list_for_each(c, &clients, link) {
+		if (!VISIBLEON(c, m) || c->isfloating || c->isfullscreen)
+			continue;
+
+		if (i == n - 1) {
+			/* last window gets remaining space */
+			resize(c, (struct wlr_box){nx, ny, nw, nh}, 0);
+		} else if (horizontal) {
+			int w = nw / 2;
+
+			resize(c, (struct wlr_box){nx, ny, w, nh}, 0);
+
+			nx += w;
+			nw -= w;
+		} else {
+			int h = nh / 2;
+
+			resize(c, (struct wlr_box){nx, ny, nw, h}, 0);
+
+			ny += h;
+			nh -= h;
+		}
+
+		horizontal = !horizontal;
+		i++;
+	}
+}
+
+void
 togglefloating(const Arg *arg)
 {
 	Client *sel = focustop(selmon);
@@ -3373,6 +3433,27 @@ virtualpointer(struct wl_listener *listener, void *data)
 	wlr_cursor_attach_input_device(cursor, device);
 	if (event->suggested_output)
 		wlr_cursor_map_input_to_output(cursor, device, event->suggested_output);
+}
+
+void
+warpcursor(const Client *c) {
+	if (cursor_mode != CurNormal) {
+		return;
+	}
+	if (!c && selmon) {
+		wlr_cursor_warp_closest(cursor,
+			  NULL,
+			  selmon->w.x + selmon->w.width / 2.0 ,
+			  selmon->w.y + selmon->w.height / 2.0);
+	}
+	else if ( c && (cursor->x < c->geom.x ||
+		cursor->x > c->geom.x + c->geom.width ||
+		cursor->y < c->geom.y ||
+		cursor->y > c->geom.y + c->geom.height))
+		wlr_cursor_warp_closest(cursor,
+			  NULL,
+			  c->geom.x + c->geom.width / 2.0,
+			  c->geom.y + c->geom.height / 2.0);
 }
 
 Monitor *

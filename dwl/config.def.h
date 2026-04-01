@@ -50,6 +50,7 @@ static const Layout layouts[] = {
 	{ "[]=",      tile },
 	{ "><>",      NULL },    /* no layout function means floating behavior */
 	{ "[M]",      monocle },
+	{ "[\\]",     dwindle },
 };
 
 /* monitors */
@@ -168,6 +169,9 @@ static const Key keys[] = {
 	{ MODKEY,                    XKB_KEY_t,           setlayout,        {.v = &layouts[0]} },
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_v,           setlayout,        {.v = &layouts[1]} },
 	{ MODKEY,                    XKB_KEY_m,           setlayout,        {.v = &layouts[2]} },
+	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_t,           setlayout,        {.v = &layouts[3]} },
+
+
 	{ MODKEY,                    XKB_KEY_space,       setlayout,        {0} },
 	{ MODKEY,                    XKB_KEY_v,       togglefloating,   {0} },
 	{ MODKEY,                    XKB_KEY_f,           togglefullscreen, {0} },
@@ -191,7 +195,7 @@ static const Key keys[] = {
 	
 	{WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT,		XKB_KEY_s,	spawn, 	SHCMD("spotify-launcher")},
 		
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_b, spawn, SHCMD("qutebrowser") },
+	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_b, spawn, SHCMD("waterfox") },
 	{ MODKEY,                             XKB_KEY_e, spawn, SHCMD("alacritty -e nnn") },
 	{ MODKEY,                             XKB_KEY_b, spawn, SHCMD("alacritty -e bluetui") },
 	{ WLR_MODIFIER_ALT,                   XKB_KEY_s, spawn, SHCMD("alacritty -e ncpamixer") },
