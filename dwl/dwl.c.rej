@@ -1,0 +1,10 @@
+--- dwl.c
++++ dwl.c
+@@ -140,6 +140,7 @@ typedef struct {
+ 	uint32_t tags;
+ 	int isfloating, isurgent, isfullscreen;
+ 	uint32_t resize; /* configure serial of a pending resize */
++	float cweight;
+ } Client;
+ 
+ typedef struct {
